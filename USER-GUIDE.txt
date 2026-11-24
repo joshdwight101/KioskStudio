@@ -1,0 +1,84 @@
+KIOSK STUDIO USER GUIDE
+Version 1.1.0 · Joshua Dwight
+
+Kiosk Studio prepares an approved-app launcher for a dedicated Ubuntu or Linux Mint account. The line at the top reports the detected distribution, desktop, display protocol, login manager, and supported kiosk runtimes it finds.
+
+WHAT IS CAGE?
+
+Cage is the small Wayland program that displays the kiosk session and routes keyboard and mouse input to it. It keeps the active app maximized and shows one app at a time. Kiosk Studio configures the account, approved apps, startup options, and boot behavior. When the deployed session starts, Cage displays the launcher and the apps it opens.
+
+The Deployment tab shows whether the Cage runtime is available. Click Install Cage Runtime if it is missing. Installing Cage prepares the runtime. Deploy Current Setup is the step that changes the next boot.
+
+Cage project documentation
+https://github.com/cage-kiosk/cage/wiki
+
+CHOOSE THE ACCOUNT AND APPS
+
+1. On the Accounts tab, create a dedicated standard account or choose an existing one in the kiosk account picker. Keep a separate administrator account for recovery.
+2. Check the apps that should appear on the kiosk screen. Search by app name or path to narrow the list.
+3. For software outside the normal app directories, enter one or more absolute folder paths in Additional app folders. Separate multiple paths with colons, then click Scan Apps. The scan checks those folders for desktop entries and executable files.
+4. Make sure the kiosk account can read or run the selected apps. Test hardware, display, and app compatibility on the deployment machine before enabling automatic startup.
+
+MANAGE ACCOUNTS AND GROUPS
+
+• Accounts → Create Account creates a standard account and home folder. Choose an additional group if needed. The new account is selected automatically in the kiosk account picker. Password sign-in starts locked, so this account is ready for automatic kiosk startup. An administrator can set a password separately if the account also needs manual sign-in.
+• Use Create Group for a group that does not exist yet. Use Add to Group to give an existing account an additional membership.
+• Click the refresh button next to the kiosk account picker to reload users and groups changed elsewhere. Account changes ask for administrator authentication.
+
+OPEN APPS OR BROWSER PAGES AT STARTUP
+
+1. Check the apps you want to allow on Approved Apps.
+2. Open Autostart and enable Launch at startup for each app that should open when the kiosk session starts.
+3. Enter arguments as the app expects them. Use quotes around values with spaces. For example, a browser that supports kiosk mode may accept --kiosk.
+4. Expand Browser URLs under the approved browser. Enter one complete HTTP or HTTPS URL per line. Kiosk Studio passes the URLs after the launch arguments. How multiple URLs open depends on the browser.
+
+The kiosk opens enabled apps once per session. In Cage, only one window is visible at a time, so test which app is in front when more than one starts. Approved apps remain available in the kiosk launcher. Backups and session files include the Autostart choices.
+
+CREATE A KIOSK SESSION FOR TESTING OR DEPLOYMENT
+
+File → Create Kiosk Session saves a Python launcher file such as kiosk-public.py. It contains the selected account, the approved app paths, the Autostart options, and your automatic-start preference. Run it under the selected account for a manual test, or select it under Deployment → Deploy Session File. Creating the file also remembers your selections in Kiosk Studio.
+
+The file references apps already installed on the machine. If you move an app, rescan and create a session file with the updated path. Use Deployment → Deploy Current Setup to deploy your current choices directly from the editor.
+
+BACK UP OR RESTORE SETTINGS
+
+• File → Back Up Settings saves a JSON backup of the account, automatic-start preference, additional app folders, selected apps, and Autostart options.
+• File → Restore Settings loads the editor from that JSON backup. You can also select a previously exported kiosk session (.py). Kiosk Studio reads the settings stored in the session file.
+• If the account or apps are missing on this computer, review the message and update the selections. Restore Settings loads your choices into the editor. To update a deployed kiosk, use Deploy Current Setup and reboot.
+
+TRY A MANUAL SESSION
+
+Use Deployment → Install Cage Runtime if needed. Sign in as the selected kiosk account and run the following command with the path to your session file.
+
+    dbus-run-session -- cage -- /usr/bin/python3 /path/to/kiosk-public.py
+
+Use a local text console for a dedicated session. Running the command inside a graphical desktop opens a preview in a window. The kiosk account needs read access to the session file and permission to use the selected apps. The account created by Kiosk Studio has password sign-in locked by default. Set a password separately if you need to sign in manually. On a system using GNOME Kiosk Script Session, configure its per-user startup script to run the session file and select that session at sign-in.
+
+START THE KIOSK AUTOMATICALLY AT BOOT
+
+1. Select the account and check Start kiosk automatically at boot.
+2. Open Deployment. If the runtime is missing, click Install Cage Runtime and authorize the package installation.
+3. Click Deploy Current Setup and review the selected account. Continue and authorize the change. To use a previously saved session file, click Deploy Session File instead.
+4. Reboot when ready. The kiosk starts under the selected account without a password prompt and displays the approved apps in place of the normal graphical sign-in.
+
+To change an installed kiosk, update the settings, deploy the current setup again, and reboot.
+
+RETURN TO NORMAL BOOT
+
+Open Deployment, click Restore Normal Boot, authorize the change, and reboot.
+
+To restore boot from an administrator terminal, run the following command.
+
+    sudo /usr/bin/python3 "${XDG_DATA_HOME:-$HOME/.local/share}/kiosk-studio/deploy.py" --remove
+
+If the kiosk cannot start, use the bootloader to boot once with systemd.unit=multi-user.target, sign in as an administrator, and run the same removal command.
+
+The launcher limits which apps it displays. Approved apps can still open files, links, or other programs if their own settings allow it. Choose apps appropriate for public use and test the kiosk account before deploying.
+
+DESKTOP SHORTCUT
+
+File → Install Desktop Shortcut creates or replaces the Kiosk Studio administration shortcut on your desktop. The export separately defines the apps shown in the kiosk session.
+
+APPLICATION MENU
+
+File → Install in Application Menu creates or refreshes this app’s launcher in the Ubuntu application menu.
